@@ -7,21 +7,15 @@ var gulp = require('gulp'),
     watch = require('gulp-watch'),
     less = require('gulp-less'),
     csslint = require('gulp-csslint'),
-    path = require('path'),
-    fs = require('fs'),
     scp = require('gulp-scp2'),
     gutil = require('gulp-util'),
     ping = require('ping'),
     browserSync = require('browser-sync').create(),
     autoprefixer = require('gulp-autoprefixer'),
-    debug = require('gulp-debug'),
     shell = require('gulp-shell'),
     perl = require('./lib/perl'),
-    config = require('./config');
-
-var browserReload = function() {
-    browserSync.reload();
-};
+    osenv = require('osenv'),
+    config = path.resolve(osenv.home(), '.epages-config');
 
 var themePath = config['themes-local'] + '/' + config.theme.toLowerCase();
 
@@ -48,26 +42,26 @@ gulp.task('default', config['watch-tasks']);
  * Watch Tasks for theme rendering
  */
 
- gulp.task('watch-less', function() {
-     watch(themePath + '/Style/less/**/*.less', function() {
+ gulp.task('watch-less', function () {
+     watch(themePath + '/Style/less/**/*.less', function () {
          gulp.start(['generateLessFile']);
      });
  });
 
- gulp.task('watch-css', function() {
-     watch(themePath + '/Style/*.css', function() {
+ gulp.task('watch-css', function () {
+     watch(themePath + '/Style/*.css', function () {
          gulp.start(['generateCSSFile', 'css-lint']);
      });
  });
 
- gulp.task('watch-js', function() {
-     watch(themePath + '/Style/*.js', function() {
+ gulp.task('watch-js', function () {
+     watch(themePath + '/Style/*.js', function () {
          gulp.start(['generateJSFile']);
      });
  });
 
- gulp.task('watch-theme', function() {
-     watch(themePath + '/**', function() {
+ gulp.task('watch-theme', function () {
+     watch(themePath + '/**', function () {
          gulp.start(['generateThemeFile']);
      });
  });
@@ -78,9 +72,9 @@ gulp.task('default', config['watch-tasks']);
 /**
  * LESS
  */
-gulp.task('generateLessFile', function() {
+gulp.task('generateLessFile', function () {
     gulp.src(themePath + '/Style/less/StyleExtension.less')
-        .pipe(less()).on('error', function(err) {
+        .pipe(less()).on('error', function (err) {
             gutil.log(err);
             this.emit('end');
         })
@@ -90,21 +84,21 @@ gulp.task('generateLessFile', function() {
 /**
  * CSS
  */
-var customReporter = function(file) {
+var customReporter = function (file) {
     gutil.log(gutil.colors.cyan(file.csslint.errorCount) + ' errors in ' + gutil.colors.magenta(file.path));
 
-    file.csslint.results.forEach(function(result) {
+    file.csslint.results.forEach(function (result) {
         gutil.log(result.error.message + ' on line ' + result.error.line);
     });
 };
 
-gulp.task('css-lint', function() {
+gulp.task('css-lint', function () {
     gulp.src(themePath + '/Style/*.css')
         .pipe(csslint())
         .pipe(csslint.reporter(customReporter));
 });
 
-gulp.task('generateCSSFile', ['is-online'], function() {
+gulp.task('generateCSSFile', ['is-online'], function () {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     gulp.src(themePath + '/Style/StyleExtension.css')
         .pipe(scp({
@@ -114,7 +108,7 @@ gulp.task('generateCSSFile', ['is-online'], function() {
             dest: themeRemotePath,
             port: 22,
             watch: function(client) {
-                client.on('write', function(o) {
+                client.on('write', function (o) {
                     gutil.log('write %s', o.destination);
                 });
             }
@@ -123,7 +117,7 @@ gulp.task('generateCSSFile', ['is-online'], function() {
 /**
  * Javascript
  */
-gulp.task('generateJSFile', ['is-online'], function() {
+gulp.task('generateJSFile', ['is-online'], function () {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     gulp.src(themePath + '/Style/StyleExtension.js')
         .pipe(jshint())
@@ -136,20 +130,18 @@ gulp.task('generateJSFile', ['is-online'], function() {
             password: config['vm-pwd'],
             dest: themeRemotePath,
             port: 22,
-            watch: function(client) {
-                client.on('write', function(o) {
+            watch: function (client) {
+                client.on('write', function (o) {
                     gutil.log('write %s', o.destination);
                 });
-                client.on('end', function() {
-                    browserReload();
-                });
+                client.on('end', browserSync.reload);
             }
         }));
 });
 /*
  * Compress Folder to [themename].theme in the folder build using compress.sh
  */
-gulp.task('generateThemeFile', function() {
+gulp.task('generateThemeFile', function () {
     gulp.src('')
         .pipe(shell(
             [
@@ -160,7 +152,7 @@ gulp.task('generateThemeFile', function() {
 /**
  * Starting Webserver
  */
-gulp.task('brower-sync', function() {
+gulp.task('brower-sync', function () {
     browserSync.init({
         proxy: 'http://' + config['vm-domain'] + '/epages/DemoShop.preview/en_GB/?ObjectPath=/Shops/DemoShop&ChangeAction=SetCookiePreviewStyle&PreviewStyle=' + config.theme
             // logLevel: 'debug',
@@ -170,8 +162,8 @@ gulp.task('brower-sync', function() {
 /**
  * epages 6 controls
  */
-gulp.task('is-online', function(done) {
-    ping.sys.probe(config['vm-domain'], function(isAlive) {
+gulp.task('is-online', function (done) {
+    ping.sys.probe(config['vm-domain'], function (isAlive) {
         if (isAlive) {
             gutil.log(gutil.colors.green('VM ' + config['vm-domain'] + ' is online'));
             return done();
