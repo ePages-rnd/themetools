@@ -1,7 +1,7 @@
 # ePages 6 Themetools
 Gulp taskrunner for ePages 6 theme-rendering.
 
-_Install it with the [ePages 6 Yeoman Generator for Themes](https://github.com/huettner/generator-epages6-themes)_
+_Install it with the [ePages 6 Yeoman Generator for Themes](https://github.com/ePages-rnd/generator-epages6-themes)_
 
 ## Gulp tasks including the following task
 
@@ -11,7 +11,7 @@ _Install it with the [ePages 6 Yeoman Generator for Themes](https://github.com/h
 
 ``watch-js``: Copies modified and new js files to the webroot via scp and autoreload the browser
 
-``brower-sync``: Starting the webserver for autoreload
+``brower-sync``: Starting webserver for autoreload
 
 ## Using Less
 
