@@ -1,0 +1,38 @@
+{
+  "name": "epages6-themetools",
+  "private": true,
+  "version": "0.0.1",
+  "description": "ePages 6 Themetools",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Alexander Heimbuch (aheimbuch@epages.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ePages-rnd/generator-epages6.git"
+  },
+  "license": "MIT",
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true
+    }
+  },
+  "dependencies": {
+    "browser-sync": "^2.9.12",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-csslint": "^0.2.0",
+    "gulp-debug": "^2.1.2",
+    "gulp-jshint": "^1.12.0",
+    "gulp-less": "^3.0.3",
+    "gulp-scp2": "^0.2.0",
+    "gulp-shell": "^0.5.1",
+    "gulp-util": "^3.0.6",
+    "gulp-watch": "^4.3.4",
+    "lodash": "^3.10.0",
+    "ping": "^0.1.10",
+    "slash": "^1.0.0"
+  }
+}
