@@ -14,10 +14,9 @@ var gulp = require('gulp'),
     autoprefixer = require('gulp-autoprefixer'),
     shell = require('gulp-shell'),
     perl = require('./lib/perl'),
-    osenv = require('osenv'),
-    config = path.resolve(osenv.home(), '.epages-config');
+    config = require('./config');
 
-var themePath = config['themes-local'] + '/' + config.theme.toLowerCase();
+var themePath = config['themes-local'] + '/' + config['theme'].toLowerCase();
 
 /**
  * File watch and trigger build of:
