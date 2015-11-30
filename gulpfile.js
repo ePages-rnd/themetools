@@ -10,6 +10,8 @@ var gulp = require('gulp'),
     scp = require('gulp-scp2'),
     gutil = require('gulp-util'),
     ping = require('ping'),
+    uglify = require('gulp-uglify'),
+    rename = require("gulp-rename"),
     browserSync = require('browser-sync').create(),
     autoprefixer = require('gulp-autoprefixer'),
     shell = require('gulp-shell'),
@@ -55,7 +57,7 @@ gulp.task('default', config['watch-tasks']);
 
  gulp.task('watch-js', function () {
      watch(themePath + '/Style/*.js', function () {
-         gulp.start(['generateJSFile']);
+         gulp.start(['generateJSFile', 'compressJSFile']);
      });
  });
 
@@ -137,6 +139,27 @@ gulp.task('generateJSFile', ['is-online'], function () {
             }
         }));
 });
+
+gulp.task('compressJSFile', ['is-online'], function () {
+    var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
+    gulp.src(themePath + '/Style/StyleExtension.js')
+        .pipe(rename('StyleExtension.js.min'))
+        .pipe(uglify())
+        .pipe(scp({
+            host: config['vm-domain'],
+            username: config['vm-usr'],
+            password: config['vm-pwd'],
+            dest: themeRemotePath,
+            port: 22,
+            watch: function (client) {
+                client.on('write', function (o) {
+                    gutil.log('write %s', o.destination);
+                });
+            }
+        }));
+});
+
+
 /*
  * Compress Folder to [themename].theme in the folder build using compress.sh
  */
