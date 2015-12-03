@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "browser-sync": "^2.9.12",
+    "fs-extra": "^0.22.1",
     "gulp": "^3.9.0",
     "gulp-autoprefixer": "^3.1.0",
     "gulp-csslint": "^0.2.0",
