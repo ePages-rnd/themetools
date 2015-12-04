@@ -145,6 +145,7 @@ gulp.task('compressJSFile', ['is-online'], function () {
     gulp.src(themePath + '/Style/StyleExtension.js')
         .pipe(rename('StyleExtension.js.min'))
         .pipe(uglify())
+        .pipe(gulp.dest(themePath + '/Style'))
         .pipe(scp({
             host: config['vm-domain'],
             username: config['vm-usr'],
