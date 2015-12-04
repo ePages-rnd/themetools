@@ -79,7 +79,6 @@ gulp.task('generateLessFile', function () {
             gutil.log(err);
             this.emit('end');
         })
-        .pipe(autoprefixer('last 2 version', 'ie10'))
         .pipe(gulp.dest(themePath + '/Style'));
 });
 /**
@@ -102,6 +101,7 @@ gulp.task('css-lint', function () {
 gulp.task('generateCSSFile', ['is-online'], function () {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     gulp.src(themePath + '/Style/StyleExtension.css')
+        .pipe(autoprefixer('last 2 version', 'ie10'))
         .pipe(scp({
             host: config['vm-domain'],
             username: config['vm-usr'],
