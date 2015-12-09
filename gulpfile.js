@@ -18,7 +18,7 @@ var gulp = require('gulp'),
     perl = require('./lib/perl'),
     config = require('./config');
 
-var themePath = config['themes-local'] + '/' + config['theme'].toLowerCase();
+var themePath = config['themes-local'].trim() + '/' + config['theme'].toLowerCase();
 
 /**
  * File watch and trigger build of:
