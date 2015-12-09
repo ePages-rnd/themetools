@@ -18,7 +18,7 @@ var gulp = require('gulp'),
     perl = require('./lib/perl'),
     config = require('./config');
 
-var themePath = config['themes-local'] + '/' + config['theme'].toLowerCase();
+var themePath = config['themes-local'].trim() + '/' + config['theme'].toLowerCase();
 
 /**
  * File watch and trigger build of:
@@ -79,7 +79,6 @@ gulp.task('generateLessFile', function () {
             gutil.log(err);
             this.emit('end');
         })
-        .pipe(autoprefixer('last 2 version', 'ie10'))
         .pipe(gulp.dest(themePath + '/Style'));
 });
 /**
@@ -102,6 +101,7 @@ gulp.task('css-lint', function () {
 gulp.task('generateCSSFile', ['is-online'], function () {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     gulp.src(themePath + '/Style/StyleExtension.css')
+        .pipe(autoprefixer('last 2 version', 'ie10'))
         .pipe(scp({
             host: config['vm-domain'],
             username: config['vm-usr'],
