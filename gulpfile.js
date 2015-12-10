@@ -19,6 +19,10 @@ var gulp = require('gulp'),
     config = require('./config');
 
 var themePath = config['themes-local'].trim() + '/' + config['theme'].toLowerCase();
+var machine = config['vm-usr'] + '@' + config['vm-domain'];
+
+
+
 
 /**
  * File watch and trigger build of:
@@ -43,7 +47,7 @@ gulp.task('default', config['watch-tasks']);
  * Watch Tasks for theme rendering
  */
 
- gulp.task('watch-less', function () {
+gulp.task('watch-less', function () {
      watch(themePath + '/Style/less/**/*.less', function () {
          gulp.start(['generateLessFile']);
      });
@@ -56,7 +60,7 @@ gulp.task('default', config['watch-tasks']);
  });
 
  gulp.task('watch-js', function () {
-     watch(themePath + '/Style/*.js', function () {
+     watch(themePath + '/Style/StyleExtension.js', function () {
          gulp.start(['generateJSFile', 'compressJSFile']);
      });
  });
@@ -74,7 +78,7 @@ gulp.task('default', config['watch-tasks']);
  * LESS
  */
 gulp.task('generateLessFile', function () {
-    gulp.src(themePath + '/Style/less/StyleExtension.less')
+    return gulp.src(themePath + '/Style/less/StyleExtension.less')
         .pipe(less()).on('error', function (err) {
             gutil.log(err);
             this.emit('end');
@@ -93,14 +97,14 @@ var customReporter = function (file) {
 };
 
 gulp.task('css-lint', function () {
-    gulp.src(themePath + '/Style/*.css')
+    return gulp.src(themePath + '/Style/*.css')
         .pipe(csslint())
         .pipe(csslint.reporter(customReporter));
 });
 
 gulp.task('generateCSSFile', ['is-online'], function () {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
-    gulp.src(themePath + '/Style/StyleExtension.css')
+    return gulp.src(themePath + '/Style/StyleExtension.css')
         .pipe(autoprefixer('last 2 version', 'ie10'))
         .pipe(scp({
             host: config['vm-domain'],
@@ -113,14 +117,15 @@ gulp.task('generateCSSFile', ['is-online'], function () {
                     gutil.log('write %s', o.destination);
                 });
             }
-        }), perl.buildCSS(browserSync.reload));
+        }), perl.buildCSS(browserSync.reload))
+        .on('end', changePermission);
 });
 /**
  * Javascript
  */
 gulp.task('generateJSFile', ['is-online'], function () {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
-    gulp.src(themePath + '/Style/StyleExtension.js')
+    return gulp.src(themePath + '/Style/StyleExtension.js')
         .pipe(jshint())
         .pipe(jshint.reporter('default', {
             verbose: true
@@ -135,15 +140,16 @@ gulp.task('generateJSFile', ['is-online'], function () {
                 client.on('write', function (o) {
                     gutil.log('write %s', o.destination);
                 });
-                client.on('end', browserSync.reload);
+                client.on('end', browserSync.reload, changePermission);
             }
-        }));
+        }))
+        .on('end', changePermission);
 });
 
 gulp.task('compressJSFile', ['is-online'], function () {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
-    gulp.src(themePath + '/Style/StyleExtension.js')
-        .pipe(rename('StyleExtension.js.min'))
+    return gulp.src(themePath + '/Style/StyleExtension.js')
+        .pipe(rename('StyleExtension.min.js'))
         .pipe(uglify())
         .pipe(gulp.dest(themePath + '/Style'))
         .pipe(scp({
@@ -157,9 +163,19 @@ gulp.task('compressJSFile', ['is-online'], function () {
                     gutil.log('write %s', o.destination);
                 });
             }
-        }));
+        }))
+        .on('end', changePermission);
 });
-
+function changePermission () {
+    var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
+    gulp.src('')
+        .pipe(shell(
+            [
+                'ssh ' + machine + ' "chown -R eprunapp:apache ' + themeRemotePath + '/' + '"',
+                'echo Permission has changed'
+            ]
+        ));
+}
 
 /*
  * Compress Folder to [themename].theme in the folder build using compress.sh
@@ -172,6 +188,7 @@ gulp.task('generateThemeFile', function () {
             ]
         ));
 });
+
 /**
  * Starting Webserver
  */
