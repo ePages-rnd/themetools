@@ -41,7 +41,7 @@ var machine = config['vm-usr'] + '@' + config['vm-domain'];
  *  "watch-theme" you should only use, if you edit the export.xml
  */
 
-gulp.task('default', config['watch-tasks']);
+gulp.task('default', config['watch-tasks-theme']);
 
 /**
  * Watch Tasks for theme rendering
