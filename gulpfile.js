@@ -16,13 +16,12 @@ var gulp = require('gulp'),
     autoprefixer = require('gulp-autoprefixer'),
     shell = require('gulp-shell'),
     perl = require('./lib/perl'),
+    stripCssComments = require('gulp-strip-css-comments'),
     config = require('./config');
 
+var globalLessPath = config['themes-local'] + '/_less/**/*.less';
 var themePath = config['themes-local'].trim() + '/' + config['theme'].toLowerCase();
 var machine = config['vm-usr'] + '@' + config['vm-domain'];
-
-
-
 
 /**
  * File watch and trigger build of:
@@ -47,29 +46,29 @@ gulp.task('default', config['watch-tasks-theme']);
  * Watch Tasks for theme rendering
  */
 
-gulp.task('watch-less', function () {
-     watch(themePath + '/Style/less/**/*.less', function () {
-         gulp.start(['generateLessFile']);
-     });
- });
+gulp.task('watch-less', function() {
+    watch([themePath + "/Style/less/**/*.less", globalLessPath], function() {
+        gulp.start(['generateLessFile']);
+    });
+});
 
- gulp.task('watch-css', function () {
-     watch(themePath + '/Style/*.css', function () {
-         gulp.start(['generateCSSFile', 'css-lint']);
-     });
- });
+gulp.task('watch-css', function() {
+    watch(themePath + '/Style/*.css', function() {
+        gulp.start(['generateCSSFile', 'css-lint']);
+    });
+});
 
- gulp.task('watch-js', function () {
-     watch(themePath + '/Style/StyleExtension.js', function () {
-         gulp.start(['generateJSFile', 'compressJSFile']);
-     });
- });
+gulp.task('watch-js', function() {
+    watch(themePath + '/Style/StyleExtension.js', function() {
+        gulp.start(['generateJSFile', 'compressJSFile']);
+    });
+});
 
- gulp.task('watch-theme', function () {
-     watch(themePath + '/**', function () {
-         gulp.start(['generateThemeFile']);
-     });
- });
+gulp.task('watch-theme', function() {
+    watch(themePath + '/**', function() {
+        gulp.start(['generateThemeFile']);
+    });
+});
 
 /*******************************************************************************
  * Tasks for theme rendering
@@ -77,32 +76,26 @@ gulp.task('watch-less', function () {
 /**
  * LESS
  */
-gulp.task('generateLessFile', function () {
+gulp.task('generateLessFile', function() {
     return gulp.src(themePath + '/Style/less/StyleExtension.less')
-        .pipe(less()).on('error', function (err) {
+        .pipe(less())
+        .on('error', function(err) {
             gutil.log(err);
             this.emit('end');
         })
+        .pipe(stripCssComments())
         .pipe(gulp.dest(themePath + '/Style'));
 });
 /**
  * CSS
  */
-var customReporter = function (file) {
-    gutil.log(gutil.colors.cyan(file.csslint.errorCount) + ' errors in ' + gutil.colors.magenta(file.path));
-
-    file.csslint.results.forEach(function (result) {
-        gutil.log(result.error.message + ' on line ' + result.error.line);
-    });
-};
-
-gulp.task('css-lint', function () {
+gulp.task('css-lint', function() {
     return gulp.src(themePath + '/Style/*.css')
         .pipe(csslint())
-        .pipe(csslint.reporter(customReporter));
+        .pipe(csslint.formatter('compact'));
 });
 
-gulp.task('generateCSSFile', ['is-online'], function () {
+gulp.task('generateCSSFile', ['is-online'], function() {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     return gulp.src(themePath + '/Style/StyleExtension.css')
         .pipe(autoprefixer('last 2 version', 'ie10'))
@@ -113,7 +106,7 @@ gulp.task('generateCSSFile', ['is-online'], function () {
             dest: themeRemotePath,
             port: 22,
             watch: function(client) {
-                client.on('write', function (o) {
+                client.on('write', function(o) {
                     gutil.log('write %s', o.destination);
                 });
             }
@@ -123,7 +116,7 @@ gulp.task('generateCSSFile', ['is-online'], function () {
 /**
  * Javascript
  */
-gulp.task('generateJSFile', ['is-online'], function () {
+gulp.task('generateJSFile', ['is-online'], function() {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     return gulp.src(themePath + '/Style/StyleExtension.js')
         .pipe(jshint())
@@ -136,8 +129,8 @@ gulp.task('generateJSFile', ['is-online'], function () {
             password: config['vm-pwd'],
             dest: themeRemotePath,
             port: 22,
-            watch: function (client) {
-                client.on('write', function (o) {
+            watch: function(client) {
+                client.on('write', function(o) {
                     gutil.log('write %s', o.destination);
                 });
                 client.on('end', browserSync.reload, changePermission);
@@ -146,7 +139,7 @@ gulp.task('generateJSFile', ['is-online'], function () {
         .on('end', changePermission);
 });
 
-gulp.task('compressJSFile', ['is-online'], function () {
+gulp.task('compressJSFile', ['is-online'], function() {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     return gulp.src(themePath + '/Style/StyleExtension.js')
         .pipe(rename('StyleExtension.min.js'))
@@ -158,15 +151,16 @@ gulp.task('compressJSFile', ['is-online'], function () {
             password: config['vm-pwd'],
             dest: themeRemotePath,
             port: 22,
-            watch: function (client) {
-                client.on('write', function (o) {
+            watch: function(client) {
+                client.on('write', function(o) {
                     gutil.log('write %s', o.destination);
                 });
             }
         }))
         .on('end', changePermission);
 });
-function changePermission () {
+
+function changePermission() {
     var themeRemotePath = [config.webroot, 'Store/Shops/DemoShop/Styles', config.theme].join('/');
     gulp.src('')
         .pipe(shell(
@@ -180,7 +174,7 @@ function changePermission () {
 /*
  * Compress Folder to [themename].theme in the folder build using compress.sh
  */
-gulp.task('generateThemeFile', function () {
+gulp.task('generateThemeFile', function() {
     gulp.src('')
         .pipe(shell(
             [
@@ -192,7 +186,7 @@ gulp.task('generateThemeFile', function () {
 /**
  * Starting Webserver
  */
-gulp.task('brower-sync', function () {
+gulp.task('brower-sync', function() {
     browserSync.init({
         proxy: 'http://' + config['vm-domain'] + '/epages/DemoShop.preview/en_GB/?ObjectPath=/Shops/DemoShop&ChangeAction=SetCookiePreviewStyle&PreviewStyle=' + config.theme
             // logLevel: 'debug',
@@ -202,8 +196,8 @@ gulp.task('brower-sync', function () {
 /**
  * epages 6 controls
  */
-gulp.task('is-online', function (done) {
-    ping.sys.probe(config['vm-domain'], function (isAlive) {
+gulp.task('is-online', function(done) {
+    ping.sys.probe(config['vm-domain'], function(isAlive) {
         if (isAlive) {
             gutil.log(gutil.colors.green('VM ' + config['vm-domain'] + ' is online'));
             return done();
