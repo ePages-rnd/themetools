@@ -16,6 +16,7 @@ var gulp = require('gulp'),
     autoprefixer = require('gulp-autoprefixer'),
     shell = require('gulp-shell'),
     perl = require('./lib/perl'),
+    stripCssComments = require('gulp-strip-css-comments'),
     config = require('./config');
 
 var themePath = config['themes-local'].trim() + '/' + config['theme'].toLowerCase();
@@ -48,14 +49,15 @@ gulp.task('default', config['watch-tasks-theme']);
  */
 
 gulp.task('watch-less', function () {
-     watch(themePath + '/Style/less/**/*.less', function () {
+     watch([themePath + '/../_global/**/*.less', themePath + '/Style/less/**/*.less'], function () {
          gulp.start(['generateLessFile']);
      });
  });
 
  gulp.task('watch-css', function () {
      watch(themePath + '/Style/*.css', function () {
-         gulp.start(['generateCSSFile', 'css-lint']);
+        //  gulp.start(['generateCSSFile', 'css-lint']);
+         gulp.start(['generateCSSFile']);
      });
  });
 
@@ -83,6 +85,7 @@ gulp.task('generateLessFile', function () {
             gutil.log(err);
             this.emit('end');
         })
+        .pipe(stripCssComments())
         .pipe(gulp.dest(themePath + '/Style'));
 });
 /**
