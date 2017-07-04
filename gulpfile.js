@@ -49,7 +49,7 @@ gulp.task('default', config['watch-tasks-theme']);
  */
 
 gulp.task('watch-less', function () {
-     watch([themePath + '/../_global/**/*.less', themePath + '/Style/less/**/*.less'], function () {
+     watch([themePath + '/Style/less/**/*.less'], function () {
          gulp.start(['generateLessFile']);
      });
  });
